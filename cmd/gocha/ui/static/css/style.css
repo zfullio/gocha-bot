@@ -1,0 +1,580 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Ваши кастомные цвета для игровых элементов */
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+
+    /* Используем Telegram цвета как базу */
+    --background: var(--tg-theme-bg-color, #0f0f23);
+    --surface: var(--tg-theme-secondary-bg-color, #1a1a2e);
+    --surface-light: var(--tg-theme-section-bg-color, #2a2a4a);
+    --text: var(--tg-theme-text-color, #ffffff);
+    --text-muted: var(--tg-theme-hint-color, #94a3b8);
+    --border: var(--tg-theme-section-header-text-color, #334155);
+    --accent: var(--tg-theme-accent-text-color, #6366f1);
+
+    /* Игровые градиенты остаются кастомными */
+    --glass: rgba(255, 255, 255, 0.1);
+    --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    color-scheme: var(--tg-color-scheme);
+    background-image:
+        radial-gradient(at 80% 20%, var(--primary) 0px, transparent 50%),
+        radial-gradient(at 40% 40%, var(--accent) 0px, transparent 50%);
+    min-height: 100vh;
+    font-family: var(--tg-theme-font-family, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+    overflow-x: hidden;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 15px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px 0;
+    transition: all 0.3s ease;
+    will-change: display;
+}
+
+header h1 {
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+header p {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+.pet-id-section {
+    background: var(--surface);
+    padding: 25px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    text-align: center;
+}
+
+.pet-placeholder {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 20px;
+    padding: 24px;
+    margin: 20px auto;
+    max-width: 200px;
+    text-align: center;
+    border: 1px dashed var(--tg-theme-hint-color);
+}
+
+/* Используем Telegram button цвета для главных кнопок */
+.load-btn {
+    padding: 12px 24px;
+    background: var(--tg-theme-button-color, var(--gradient-1));
+    color: var(--tg-theme-button-text-color, white);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.load-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+    filter: brightness(1.1);
+}
+
+.load-btn:active {
+    transform: translateY(0);
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    margin: 30px 0;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.pet-container {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 20px 15px;
+    background: var(--gradient-2);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pet-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.pet-avatar {
+    font-size: 80px;
+    margin: 10px 0;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+}
+
+.pet-avatar:hover {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.pet-avatar img {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pet-avatar img:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+#emojiAvatar {
+    font-size: 100px;
+    line-height: 1;
+}
+
+.pet-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 8px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.mood-indicator {
+    font-size: 1.4rem;
+    margin: 8px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 50px;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gradient-1);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent);
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.stat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-name {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--gradient-1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 2px;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Компактная сетка действий */
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+/* Кнопки действий остаются кастомными для игрового опыта */
+.action-btn {
+    padding: 10px 6px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 60px;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.action-btn:hover::before {
+    left: 100%;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+}
+
+.action-btn:active {
+    transform: translateY(-1px) scale(1.01);
+}
+
+.action-btn span:first-child {
+    font-size: 1.3rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.action-btn span:last-child {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+/* Системные кнопки используют Telegram стили */
+.system-btn {
+    padding: 12px 24px;
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    border-radius: var(--tg-border-radius, 12px);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.system-btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Игровые кнопки остаются яркими */
+.btn-feed { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+.btn-play { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+.btn-clean { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+.btn-heal { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.btn-sleep { background: linear-gradient(135deg, #667eea, #764ba2); }
+.btn-wakeup { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+
+.status-message {
+    text-align: center;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    /* Базовые стили используют Telegram цвета */
+    background: var(--tg-theme-secondary-bg-color, var(--surface));
+    color: var(--tg-theme-text-color, var(--text));
+    border: 1px solid var(--tg-theme-section-header-text-color, var(--border));
+}
+
+/* Хорошее состояние - используем Telegram акцентный цвет */
+.status-good {
+    background: var(--tg-theme-accent-text-color, var(--success));
+    color: var(--tg-theme-bg-color, white);
+    border-color: var(--tg-theme-accent-text-color, var(--success));
+}
+
+/* Предупреждение - более мягкие цвета с учетом темы */
+.status-warning {
+    background: var(--tg-theme-secondary-bg-color, var(--surface));
+    color: var(--tg-theme-text-color, var(--text));
+    border: 2px solid var(--warning);
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.1);
+}
+
+/* Опасность - используем красный, но адаптивно */
+.status-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--tg-theme-text-color, white);
+    border: 2px solid var(--danger);
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.1);
+}
+
+/* В светлой теме Telegram делаем более контрастные варианты */
+@media (prefers-color-scheme: light) {
+    .status-warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--tg-theme-text-color, #92400e);
+        border-color: var(--warning);
+    }
+
+    .status-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--tg-theme-text-color, #dc2626);
+        border-color: var(--danger);
+    }
+}
+
+/* Если Telegram передает свои переменные для предупреждений */
+.status-warning {
+    background: var(--tg-theme-hint-color, rgba(245, 158, 11, 0.1));
+    color: var(--tg-theme-text-color, var(--text));
+    border-color: var(--warning);
+}
+
+.status-danger {
+    background: var(--tg-theme-destructive-text-color, rgba(239, 68, 68, 0.1));
+    color: var(--tg-theme-text-color, var(--text));
+    border-color: var(--tg-theme-destructive-text-color, var(--danger));
+}
+
+.age-display {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+/* Стиль для кнопки создания нового питомца */
+.create-new-pet-btn {
+    padding: 12px 24px;
+    background: var(--gradient-1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 15px 0;
+    width: 100%;
+}
+
+.create-new-pet-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+    filter: brightness(1.1);
+}
+
+/* Анимации остаются */
+.fade-in { animation: fadeIn 0.5s ease-out; }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 15px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    main {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    header h1 { font-size: 2.2rem; }
+    .pet-avatar { font-size: 80px; }
+    #emojiAvatar { font-size: 80px; }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .action-btn {
+        min-height: 55px;
+        padding: 8px 4px;
+    }
+}
+
+/* Поле ввода имени питомца */
+#petNameInput:focus {
+    border-color: var(--tg-theme-accent-text-color, var(--accent));
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Темная тема через Telegram переменные */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: var(--tg-theme-bg-color, #0f0f23);
+        --surface: var(--tg-theme-secondary-bg-color, #1a1a2e);
+        --text: var(--tg-theme-text-color, #ffffff);
+    }
+}
+
+/* Анимации */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+.pet-container { animation: float 6s ease-in-out infinite; }
+
+.critical-pulse { animation: pulse 1s infinite; }
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}

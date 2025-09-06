@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Мой Тамагочи</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- Telegram Web App мета-теги -->
+    <meta name="telegram-web-app" content="true">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Preload критически важных ресурсов -->
+    <link rel="preload" href="https://telegram.org/js/telegram-web-app.js" as="script">
+
+    <!-- Favicon для лучшего UX -->
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+</head>
+<body>
+<main>
+    <header>
+        <h1>🐾 Мой Тамагочи</h1>
+        <p>Заботьтесь о своём виртуальном питомце!</p>
+    </header>
+
+    <!-- Экран: питомец не найден -->
+    <div id="createPetScreen" style="display: none; text-align: center; padding: 40px 20px;">
+        <h2 style="margin-bottom: 12px;">У вас ещё нет питомца</h2>
+        <p style="color: var(--tg-theme-hint-color); margin-bottom: 30px;">
+            Нажмите кнопку ниже, чтобы завести своего первого виртуального друга!
+        </p>
+        <div class="pet-placeholder">
+            <span style="font-size: 80px; margin-bottom: 10px;">🐾</span>
+            <p style="font-size: 14px; opacity: 0.7;">Новый питомец</p>
+        </div>
+        <div style="margin-bottom: 30px;">
+            <input type="text"
+                   id="petNameInput"
+                   placeholder="Имя питомца..."
+                   maxlength="20"
+                   onkeypress="if(event.key==='Enter') handleMainButtonClick()"
+                   style="width: 100%;
+                          max-width: 250px;
+                          padding: 12px 16px;
+                          border: 2px solid var(--tg-theme-section-header-text-color, var(--border));
+                          border-radius: 12px;
+                          background: var(--tg-theme-secondary-bg-color, var(--surface));
+                          color: var(--tg-theme-text-color, var(--text));
+                          font-size: 16px;
+                          text-align: center;
+                          outline: none;
+                          transition: all 0.2s ease;">
+        </div>
+    </div>
+
+    <div class="loading" id="loadingSpinner">
+        <div class="spinner"></div>
+        <p>Загрузка данных питомца...</p>
+    </div>
+
+    <div id="petInfo" class="fade-in" style="display: none;">
+        <div class="pet-container" id="petContainer">
+            <div class="pet-avatar" id="petAvatar">
+                <img id="moodImage" src="" alt="Питомец"
+                     style="width: 150px; height: 150px; object-fit: contain; border-radius: 20px; display: none;">
+                <div id="emojiAvatar">🐱</div>
+            </div>
+            <h2 class="pet-name" id="petName">Мой питомец</h2>
+            <div class="mood-indicator" id="moodIndicator">😊</div>
+            <div class="status-message" id="statusMessage">Ваш питомец чувствует себя хорошо!</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card" role="status" aria-label="Статистика голода">
+                <div class="stat-icon">🍖</div>
+                <div class="stat-name">Голод</div>
+                <div class="stat-value" id="hungerValue">100</div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" id="hungerBar"></div>
+                </div>
+            </div>
+
+            <div class="stat-card" role="status" aria-label="Статистика счастья">
+                <div class="stat-icon">😊</div>
+                <div class="stat-name">Счастье</div>
+                <div class="stat-value" id="happinessValue">100</div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" id="happinessBar"></div>
+                </div>
+            </div>
+
+            <div class="stat-card" role="status" aria-label="Статистика чистоты">
+                <div class="stat-icon">🧼</div>
+                <div class="stat-name">Чистота</div>
+                <div class="stat-value" id="hygieneValue">100</div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" id="hygieneBar"></div>
+                </div>
+            </div>
+
+            <div class="stat-card" role="status" aria-label="Статистика здоровья">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-name">Здоровье</div>
+                <div class="stat-value" id="healthValue">100</div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" id="healthBar"></div>
+                </div>
+            </div>
+
+            <div class="stat-card" role="status" aria-label="Статистика энергии">
+                <div class="stat-icon">💤</div>
+                <div class="stat-name">Энергия</div>
+                <div class="stat-value" id="energyValue">100</div>
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-fill" id="energyBar"></div>
+                </div>
+            </div>
+
+            <div class="stat-card" role="status" aria-label="Возраст питомца">
+                <div class="stat-icon">🎂</div>
+                <div class="stat-name">Возраст</div>
+                <div class="stat-value" id="ageValue">0</div>
+                <div class="age-display">дней</div>
+            </div>
+        </div>
+
+        <div class="actions-grid" role="group" aria-label="Действия с питомцем">
+            <button class="action-btn btn-feed" onclick="performAction('feed')"
+                    aria-label="Покормить питомца">
+                <span>🍎</span>
+                <span>Покормить</span>
+            </button>
+
+            <button class="action-btn btn-play" onclick="performAction('play')"
+                    aria-label="Поиграть с питомцем">
+                <span>🎮</span>
+                <span>Играть</span>
+            </button>
+
+            <button class="action-btn btn-clean" onclick="performAction('clean')"
+                    aria-label="Помыть питомца">
+                <span>🛁</span>
+                <span>Помыть</span>
+            </button>
+
+            <button class="action-btn btn-heal" onclick="performAction('heal')"
+                    aria-label="Лечить питомца">
+                <span>💊</span>
+                <span>Лечить</span>
+            </button>
+
+            <button class="action-btn btn-sleep" id="sleepBtn" onclick="performAction('sleep')"
+                    aria-label="Уложить питомца спать">
+                <span>😴</span>
+                <span>Спать</span>
+            </button>
+
+            <button class="action-btn btn-wakeup" id="wakeupBtn" onclick="performAction('wakeup')"
+                    style="display: none;" aria-label="Разбудить питомца">
+                <span>☀️</span>
+                <span>Разбудить</span>
+            </button>
+        </div>
+    </div>
+
+
+</main>
+
+<!-- Telegram Web App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+
+<!-- Конфигурация API -->
+<script>
+    window.API_BASE_URL = "{{.APIBaseURL}}";
+</script>
+
+<!-- Основной скрипт приложения -->
+<script src="/static/js/script.js"></script>
+
+</body>
+</html>
