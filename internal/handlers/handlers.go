@@ -68,7 +68,7 @@ func (h *PetHandlers) PetNewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.s.NewPet(ctx, getPetID(parseData), req.Name)
+	pet, err := h.s.NewPet(ctx, getPetID(parseData), req.Name)
 	if err != nil {
 		json.NewEncoder(w).Encode(entity.APIResponse[entity.Pet]{
 			Success: false,
@@ -78,10 +78,13 @@ func (h *PetHandlers) PetNewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pet.GetAvatar(fmt.Sprintf("%s/%s", h.baseUrl, "static"))
+	pet.UpdateStatus()
+
 	json.NewEncoder(w).Encode(entity.APIResponse[entity.Pet]{
 		Success: true,
 		Message: fmt.Sprintf("🎉 Поздравляем! Питомец %s создан!", req.Name),
-		Data:    entity.Pet{},
+		Data:    *pet,
 	})
 
 }

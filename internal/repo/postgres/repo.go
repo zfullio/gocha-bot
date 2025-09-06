@@ -29,6 +29,9 @@ var sqlLoadPet string
 //go:embed sql/get_chats.sql
 var sqlGetChats string
 
+//go:embed sql/deactivate_pets.sql
+var sqlDeactivatePets string
+
 type Repository struct {
 	logger *zerolog.Logger
 	db     *pgxpool.Pool
@@ -50,9 +53,17 @@ func NewRepository(logger *zerolog.Logger, db *pgxpool.Pool) *Repository {
 }
 
 func (r *Repository) NewPet(ctx context.Context, p *entity.Pet, chatID int) error {
-	_, err := r.db.Exec(ctx, sqlNewPet, chatID, p.Name, p.Health, p.Hunger, p.Happiness, p.Energy, p.Hygiene, time.Now())
+	_, err := r.db.Exec(ctx, sqlDeactivatePets, chatID)
+	if err != nil {
+		return err
+	}
 
-	return err
+	_, err = r.db.Exec(ctx, sqlNewPet, chatID, p.Name, p.Health, p.Hunger, p.Happiness, p.Energy, p.Hygiene, time.Now())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *Repository) SavePet(ctx context.Context, p *entity.Pet, chatID int) error {

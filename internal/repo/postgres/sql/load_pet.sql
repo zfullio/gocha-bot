@@ -14,4 +14,4 @@ SELECT
     last_updated,
     created_at
 FROM pets.pets
-WHERE chat_id = $1;
+WHERE chat_id = $1 and is_active = true;

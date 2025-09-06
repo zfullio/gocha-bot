@@ -482,15 +482,33 @@ async function createPet() {
             throw new Error(apiResponse.message || 'Не удалось создать питомца');
         }
 
-        // Показываем сообщение об успешном создании
-        showNotification(apiResponse.message || `🎉 Поздравляем! Питомец ${petName} создан!`, 'good');
+        // ИСПРАВЛЕНИЕ: Сразу используем данные питомца из ответа создания
+        if (apiResponse.data && apiResponse.data) {
+            petData = apiResponse.data;
+            console.log('Pet data received from create response:', petData);
 
-        if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
-            tg.HapticFeedback.notificationOccurred('success');
+            // Показываем сообщение об успешном создании
+            showNotification(apiResponse.message || `🎉 Поздравляем! Питомец ${petName} создан!`, 'good');
+
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+
+            // Сразу отображаем питомца
+            displayPetInfo();
+        } else {
+            // Если данные питомца не пришли в ответе, загружаем отдельно
+            console.log('Pet data not in create response, loading separately...');
+            showNotification(apiResponse.message || `🎉 Поздравляем! Питомец ${petName} создан!`, 'good');
+
+            if (tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+
+            // Небольшая задержка перед загрузкой для лучшего UX
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await loadPetInfo();
         }
-
-        // После создания загружаем информацию о питомце
-        await loadPetInfo();
     } catch (error) {
         console.error('Ошибка создания питомца:', error);
         showNotification(error.message || 'Не удалось создать питомца', 'danger');

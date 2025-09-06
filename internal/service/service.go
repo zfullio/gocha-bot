@@ -30,17 +30,17 @@ func NewService(cfg *config.Configuration, logger *zerolog.Logger, repo repo.Rep
 	}
 }
 
-func (s *Service) NewPet(ctx context.Context, chatID int, name string) error {
+func (s *Service) NewPet(ctx context.Context, chatID int, name string) (*entity.Pet, error) {
 	s.logger.Trace().Msg("create pet")
 	extPet := gocha.NewPet(name)
 	pet := GochaToPetEntity(extPet)
 
 	err := s.repo.NewPet(ctx, pet, chatID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return pet, nil
 }
 
 func (s *Service) PetFeed(ctx context.Context, chatID int) (entity.PetActionResult, error) {
