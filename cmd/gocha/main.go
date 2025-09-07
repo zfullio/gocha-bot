@@ -114,6 +114,8 @@ func main() {
 		log.Fatal("Не удалось запустить мониторинг питомцев")
 	}
 
+	defer srv.Stop()
+
 	petHandlers := handlers.NewPetHandlers(handlersLogger, srv, cfg.BaseUrl, cfg.IsDev)
 
 	if cfg.IsDev {

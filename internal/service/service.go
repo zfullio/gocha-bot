@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"gocha/internal/config"
@@ -20,13 +21,18 @@ type Service struct {
 	cfg    *config.Configuration
 	logger *zerolog.Logger
 	repo   repo.Repository
+
+	// Управление мониторингом
+	monitoringChats map[int]context.CancelFunc // chatID -> cancel function
+	monitoringMutex sync.RWMutex
 }
 
 func NewService(cfg *config.Configuration, logger *zerolog.Logger, repo repo.Repository) *Service {
 	return &Service{
-		cfg:    cfg,
-		logger: logger,
-		repo:   repo,
+		cfg:             cfg,
+		logger:          logger,
+		repo:            repo,
+		monitoringChats: make(map[int]context.CancelFunc),
 	}
 }
 
@@ -39,6 +45,9 @@ func (s *Service) NewPet(ctx context.Context, chatID int, name string) (*entity.
 	if err != nil {
 		return nil, err
 	}
+
+	// Запускаем мониторинг для нового питомца
+	s.startMonitoringForChat(ctx, chatID)
 
 	return pet, nil
 }
@@ -166,6 +175,38 @@ func (s *Service) SavePet(ctx context.Context, p *entity.Pet, chatID int) error 
 	return nil
 }
 
+// startMonitoringForChat запускает мониторинг для конкретного чата
+func (s *Service) startMonitoringForChat(ctx context.Context, chatID int) {
+	s.monitoringMutex.Lock()
+	defer s.monitoringMutex.Unlock()
+
+	// Если мониторинг уже активен, останавливаем старый
+	if cancelFunc, exists := s.monitoringChats[chatID]; exists {
+		cancelFunc()
+		s.logger.Debug().Msgf("Stopped existing monitoring for chat_id: %d", chatID)
+	}
+
+	// Создаем новый контекст для мониторинга этого чата
+	monitorCtx, cancel := context.WithCancel(ctx)
+	s.monitoringChats[chatID] = cancel
+
+	// Запускаем мониторинг
+	go s.MonitorAndLivePetAny(monitorCtx, chatID)
+	s.logger.Info().Msgf("Started monitoring for chat_id: %d", chatID)
+}
+
+// stopMonitoringForChat останавливает мониторинг для конкретного чата
+func (s *Service) stopMonitoringForChat(chatID int) {
+	s.monitoringMutex.Lock()
+	defer s.monitoringMutex.Unlock()
+
+	if cancelFunc, exists := s.monitoringChats[chatID]; exists {
+		cancelFunc()
+		delete(s.monitoringChats, chatID)
+		s.logger.Info().Msgf("Stopped monitoring for chat_id: %d", chatID)
+	}
+}
+
 func (s *Service) MonitorPetsAll(ctx context.Context) error {
 	s.logger.Trace().Msg("monitor pets all")
 
@@ -175,7 +216,7 @@ func (s *Service) MonitorPetsAll(ctx context.Context) error {
 	}
 
 	for _, chatID := range chats {
-		go s.MonitorAndLivePetAny(ctx, chatID)
+		s.startMonitoringForChat(ctx, chatID)
 	}
 
 	return nil
@@ -189,11 +230,18 @@ func (s *Service) MonitorAndLivePetAny(ctx context.Context, chatID int) {
 
 	for {
 		select {
+		case <-ctx.Done():
+			s.logger.Info().Msgf("Monitoring stopped for chat_id: %d", chatID)
+			return
 		case <-ticker.C:
 			pet, err := s.repo.LoadPet(ctx, chatID)
 			if err != nil {
+				if errors.Is(err, repo.ErrPetNotFound) {
+					s.logger.Warn().Msgf("Pet not found for chat_id: %d, stopping monitoring", chatID)
+					s.stopMonitoringForChat(chatID)
+					return
+				}
 				s.logger.Error().Err(err).Msg("can't load pet")
-
 				continue
 			}
 
@@ -205,7 +253,6 @@ func (s *Service) MonitorAndLivePetAny(ctx context.Context, chatID int) {
 			// Сохраняем обновленное состояние
 			if err := s.SavePet(ctx, pet, chatID); err != nil {
 				s.logger.Error().Err(err).Msg("can't save pet")
-
 				continue
 			}
 
@@ -237,6 +284,18 @@ func (s *Service) sendWarningIfNeeded(chatID int, alertType string, condition bo
 	//	_, _ = s.bot.SendMessage(tu.Message(tu.ID(int64(chatID)), message))
 	//	_ = s.repo.UpdateLastAlert(chatID, alertType, now) // Обновляем в БД
 	//}
+}
+
+// Graceful shutdown - останавливает все мониторинги
+func (s *Service) Stop() {
+	s.monitoringMutex.Lock()
+	defer s.monitoringMutex.Unlock()
+
+	for chatID, cancelFunc := range s.monitoringChats {
+		cancelFunc()
+		s.logger.Info().Msgf("Stopped monitoring for chat_id: %d during shutdown", chatID)
+	}
+	s.monitoringChats = make(map[int]context.CancelFunc)
 }
 
 func PetEntityToGocha(pet *entity.Pet) *gocha.Pet {
