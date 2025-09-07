@@ -13,14 +13,14 @@ const (
 	PetSleeping State = "sleeping"
 )
 
-// Конфигурация для UI
+// UIConfig Конфигурация для UI.
 type UIConfig struct {
 	CriticalThreshold int `json:"criticalThreshold"` // 20
 	WarningThreshold  int `json:"warningThreshold"`  // 40
 	GoodThreshold     int `json:"goodThreshold"`     // 60
 }
 
-// Расширенная информация о состоянии питомца
+// PetStatus Расширенная информация о состоянии питомца.
 type PetStatus struct {
 	AverageStats     int    `json:"averageStats"`
 	IsCritical       bool   `json:"isCritical"`
@@ -30,7 +30,7 @@ type PetStatus struct {
 	CanPerformAction bool   `json:"canPerformAction"`
 }
 
-// Информация о доступных действиях
+// AvailableActions Информация о доступных действиях.
 type AvailableActions struct {
 	CanFeed   bool `json:"canFeed"`
 	CanPlay   bool `json:"canPlay"`
@@ -65,7 +65,7 @@ type PetConfig struct {
 	HappinessDecayRate int
 }
 
-// Метод для вычисления расширенного статуса
+// UpdateStatus Метод для вычисления расширенного статуса.
 func (pet *Pet) UpdateStatus() {
 	// Вычисляем средние статы
 	avg := (pet.Hunger + pet.Happiness + pet.Hygiene + pet.Health + pet.Energy) / 5
@@ -92,7 +92,7 @@ func (pet *Pet) UpdateStatus() {
 	}
 }
 
-// Генерация статусного сообщения
+// Генерация статусного сообщения.
 func (pet *Pet) generateStatusMessage() {
 	switch pet.State {
 	case PetDead:
@@ -122,7 +122,7 @@ func (pet *Pet) generateStatusMessage() {
 	}
 }
 
-// Определение доступных действий
+// Определение доступных действий.
 func (pet *Pet) updateAvailableActions() {
 	isDead := pet.State == PetDead
 	isSleeping := pet.State == PetSleeping
@@ -199,7 +199,7 @@ func (pet *Pet) GetAvatar(baseURL string) {
 	pet.UpdateStatus()
 }
 
-// Метод для проверки возможности выполнения конкретного действия
+// CanPerformAction Метод для проверки возможности выполнения конкретного действия.
 func (pet *Pet) CanPerformAction(action string) (bool, string) {
 	if pet.State == PetDead {
 		return false, "Питомец мертв"
@@ -213,6 +213,7 @@ func (pet *Pet) CanPerformAction(action string) (bool, string) {
 		if pet.Hunger >= 100 {
 			return false, "Питомец не голоден"
 		}
+
 		return true, ""
 
 	case "play":
@@ -265,7 +266,7 @@ func (pet *Pet) CanPerformAction(action string) (bool, string) {
 	}
 }
 
-// Обновленная структура результата действия
+// PetActionResult Обновленная структура результата действия.
 type PetActionResult struct {
 	Pet            *Pet   `json:"pet"`
 	Result         Result `json:"result"`
@@ -281,7 +282,7 @@ func (r *PetActionResult) GetAvatar(baseURL string) {
 	r.Avatar = r.Pet.Avatar
 }
 
-// Генерация обратной связи для действия
+// GenerateActionFeedback Генерация обратной связи для действия.
 func (r *PetActionResult) GenerateActionFeedback(action string) {
 	actionNames := map[string]string{
 		"feed":   "покормили",
@@ -304,7 +305,7 @@ func (r *PetActionResult) GenerateActionFeedback(action string) {
 	}
 }
 
-// Локализация сообщений
+// Messages Локализация сообщений.
 type Messages struct {
 	PetDead       string `json:"petDead"`
 	PetSleeping   string `json:"petSleeping"`

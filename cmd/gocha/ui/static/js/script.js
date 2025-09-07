@@ -668,7 +668,8 @@ function updatePetDisplay() {
         happiness: pet.happiness || 0,
         hygiene: pet.hygiene || 0,
         health: pet.health || 0,
-        energy: pet.energy || 0
+        energy: pet.energy || 0,
+        age: pet.age || 0
     };
 
     // === Используем статус с бэкенда ===
@@ -681,14 +682,20 @@ function updatePetDisplay() {
         const barEl = document.getElementById(`${stat}Bar`);
 
         if (valueEl) {
-            animateNumberChange(valueEl, stats[stat]);
-            // Используем пороги с бэкенда
-            if (stats[stat] <= uiConfig.criticalThreshold) {
-                valueEl.style.color = '#ef4444';
-            } else if (stats[stat] <= uiConfig.warningThreshold) {
-                valueEl.style.color = '#f59e0b';
-            } else {
+            if (stat === 'age') {
+                valueEl.textContent = stats[stat];
+                // Возраст не имеет критических состояний
                 valueEl.style.color = 'var(--text)';
+            } else {
+                animateNumberChange(valueEl, stats[stat]);
+                // Используем пороги с бэкенда
+                if (stats[stat] <= uiConfig.criticalThreshold) {
+                    valueEl.style.color = '#ef4444';
+                } else if (stats[stat] <= uiConfig.warningThreshold) {
+                    valueEl.style.color = '#f59e0b';
+                } else {
+                    valueEl.style.color = 'var(--text)';
+                }
             }
         }
 
